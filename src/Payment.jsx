@@ -41,7 +41,7 @@ export default function Payment() {
         total,
       };
 
-      await fetch(GAS_URL, {
+      await fetch("/api/paid", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
