@@ -1,31 +1,94 @@
-// แก้ handlePaid แค่นี้
-const handlePaid = async () => {
-  try {
-    setLoading(true);
+import { useLocation, useNavigate } from "react-router-dom";
+import { Container, Typography, Button, Box } from "@mui/material";
+import { useState } from "react";
 
-    const payload = {
-      type: "PAID",
-      orderId,
-      customerName,
-      customerNote,
-      orderType,
-      items,
-      total,
-    };
+export default function Payment() {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-    await fetch("/api/paid", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    alert("รับชำระเงินแล้ว ✅");
-    navigate("/");
-  } catch (err) {
-    alert("ส่งข้อมูลไม่สำเร็จ ❌");
-  } finally {
-    setLoading(false);
+  if (!state) {
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Typography>ไม่พบข้อมูลออเดอร์</Typography>
+      </Container>
+    );
   }
-};
+
+  const {
+    orderId,
+    customerName,
+    customerNote,
+    orderType,
+    items,
+    total,
+  } = state;
+
+  const handlePaid = async () => {
+    try {
+      setLoading(true);
+
+      const payload = {
+        type: "PAID",
+        orderId,
+        customerName,
+        customerNote,
+        orderType,
+        items,
+        total,
+      };
+
+      // ✅ ยิงเข้า API ของ Vercel เท่านั้น
+      const res = await fetch("/api/paid", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("API failed");
+      }
+
+      alert("รับชำระเงินแล้ว ✅");
+      navigate("/");
+    } catch (err) {
+      alert("ส่งข้อมูลไม่สำเร็จ ❌");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Typography variant="h5">💳 ชำระเงิน</Typography>
+      <Typography>ออเดอร์: {orderId}</Typography>
+      <Typography>ลูกค้า: {customerName}</Typography>
+      <Typography sx={{ mb: 2 }}>รวม: {total} บาท</Typography>
+
+      {/* ❗ QR CODE ยังอยู่ครบ */}
+      <Box sx={{ textAlign: "center", my: 3 }}>
+        <img
+          src="/qr.jpg"
+          alt="QR รับเงิน"
+          style={{ width: "100%", maxWidth: 280 }}
+        />
+        <Typography sx={{ mt: 1 }}>
+          สแกนเพื่อชำระเงิน
+        </Typography>
+      </Box>
+
+      <Button
+        fullWidth
+        variant="contained"
+        color="success"
+        onClick={handlePaid}
+        disabled={loading}
+      >
+        {loading ? "กำลังส่ง..." : "ยืนยันว่าชำระเงินแล้ว"}
+      </Button>
+    </Container>
+  );
+}
