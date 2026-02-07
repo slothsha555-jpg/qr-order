@@ -44,22 +44,25 @@ export default function App() {
 
   /* ================= CART ================= */
   const addItem = (item) => {
-    setCart((prev) => [
-      ...prev,
-      {
-        uid: Date.now() + Math.random(),
-        id: item.id,
-        name: item.name,
-        price: Number(item.price) || 0,
-        hasSpicy: item.spicy,
-        hasBitter: item.bitter,
-        hasCook: item.hasCook,
-        spicy: item.spicy ? "เผ็ดกลาง" : "",
-        bitter: item.bitter ? "ไม่ขม" : "",
-        cook: item.hasCook ? "สุก" : "",
-      },
-    ]);
-  };
+  setCart((prev) => [
+    ...prev,
+    {
+      uid: Date.now() + Math.random(),
+      name: item.name,
+      price: item.price,
+
+      hasCook: item.hasCook,
+      hasBitter: item.hasBitter,
+      hasSpicy: item.hasSpicy,
+
+      // ===== ค่าเริ่มต้น (ตัวนี้แหละที่หาย) =====
+      cook: item.hasCook ? "สุก" : "",
+      bitter: item.hasBitter ? "ไม่ขม" : "",
+      spicy: item.hasSpicy ? "เผ็ดกลาง" : "",
+    },
+  ]);
+};
+
 
   const updateItem = (uid, field, value) => {
     setCart((prev) =>
