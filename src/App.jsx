@@ -24,28 +24,41 @@ export default function App() {
   const [orderType, setOrderType] = useState("ทานที่ร้าน");
   const [orderId, setOrderId] = useState("");
 
+  // ⭐ จำนวนต่อเมนู (เลือกก่อนกดเพิ่ม)
+  const [qty, setQty] = useState({});
+
   /* ================= INIT ================= */
- // โหลดเมนู
-useEffect(() => {
-  setOrderId("ORD-" + Date.now());
+  useEffect(() => {
+    setOrderId("ORD-" + Date.now());
 
-  fetch("/api/menu")
-    .then((r) => r.json())
-    .then((data) => {
-      setMenus(data.filter((i) => i.available));
-    })
-    .catch((e) => console.error(e));
-}, []);
+    fetch("/api/menu")
+      .then((r) => r.json())
+      .then((data) => {
+        setMenus(data.filter((i) => i.available));
+      })
+      .catch((e) => console.error(e));
+  }, []);
 
+  /* ================= QTY ================= */
+  const changeQty = (row, delta) => {
+    setQty((prev) => {
+      const current = prev[row] || 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [row]: next };
+    });
+  };
 
   /* ================= CART ================= */
   const addItem = (item) => {
+    const q = qty[item.row] || 1;
+
     setCart((prev) => [
       ...prev,
       {
         uid: Date.now() + Math.random(),
         name: item.name,
         price: item.price,
+        qty: q,
 
         hasCook: item.hasCook,
         hasBitter: item.hasBitter,
@@ -68,7 +81,10 @@ useEffect(() => {
     setCart((prev) => prev.filter((i) => i.uid !== uid));
   };
 
-  const total = cart.reduce((s, i) => s + (Number(i.price) || 0), 0);
+  const total = cart.reduce(
+    (s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1),
+    0
+  );
 
   /* ================= ORDER ================= */
   const submitOrder = async () => {
@@ -82,7 +98,6 @@ useEffect(() => {
       items: cart,
     };
 
-    // ✅ ยิงเข้า Vercel API เท่านั้น
     await fetch("/api/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -146,17 +161,50 @@ useEffect(() => {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6">📋 เมนู</Typography>
+
                 {menus.map((i) => (
                   <Box
                     key={i.row}
-                    sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 1,
+                    }}
                   >
                     <Typography>
                       {i.name} — {i.price} บาท
                     </Typography>
-                    <Button variant="outlined" onClick={() => addItem(i)}>
-                      เพิ่ม
-                    </Button>
+
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => changeQty(i.row, -1)}
+                      >
+                        −
+                      </Button>
+
+                      <Typography sx={{ width: 20, textAlign: "center" }}>
+                        {qty[i.row] || 1}
+                      </Typography>
+
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => changeQty(i.row, +1)}
+                      >
+                        +
+                      </Button>
+
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => addItem(i)}
+                      >
+                        เพิ่ม
+                      </Button>
+                    </Box>
                   </Box>
                 ))}
               </CardContent>
@@ -166,10 +214,11 @@ useEffect(() => {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6">🛒 ตะกร้า</Typography>
+
                 {cart.map((item) => (
                   <Box key={item.uid} sx={{ mb: 2 }}>
                     <Typography>
-                      {item.name} — {item.price} บาท
+                      {item.name} x{item.qty} — {item.price * item.qty} บาท
                     </Typography>
 
                     {item.hasSpicy && (
