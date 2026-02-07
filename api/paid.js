@@ -4,8 +4,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ✅ ต้องใช้ googleusercontent.com เท่านั้น
     const GAS_URL =
-      "https://script.google.com/macros/s/AKfycbzmGR44z676R6brKDa5pwnP7mpgDWsWdznADerz0aiu3nuUqimKwyG97wkKWNY4qhFYxA/exec";
+      "https://script.googleusercontent.com/macros/echo?user_content_key=PUT_YOUR_KEY_HERE";
 
     const response = await fetch(GAS_URL, {
       method: "POST",
