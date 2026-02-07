@@ -14,9 +14,6 @@ import {
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Payment from "./Payment";
 
-const GAS_URL =
-  "https://script.google.com/macros/s/AKfycbzmGR44z676R6brKDa5pwnP7mpgDWsWdznADerz0aiu3nuUqimKwyG97wkKWNY4qhFYxA/exec";
-
 export default function App() {
   const navigate = useNavigate();
 
@@ -28,41 +25,38 @@ export default function App() {
   const [orderId, setOrderId] = useState("");
 
   /* ================= INIT ================= */
-  useEffect(() => {
-    setOrderId("ORD-" + Date.now());
+ // โหลดเมนู
+useEffect(() => {
+  setOrderId("ORD-" + Date.now());
 
-    fetch(GAS_URL + "?api=MENU")
-      .then((r) => r.json())
-      .then((data) => {
-        // เอาเฉพาะเมนูที่ยังขายได้
-        setMenus(data.filter((i) => i.available));
-      })
-      .catch((e) => {
-        console.error("โหลดเมนูไม่สำเร็จ", e);
-      });
-  }, []);
+  fetch("/api/menu")
+    .then((r) => r.json())
+    .then((data) => {
+      setMenus(data.filter((i) => i.available));
+    })
+    .catch((e) => console.error(e));
+}, []);
+
 
   /* ================= CART ================= */
   const addItem = (item) => {
-  setCart((prev) => [
-    ...prev,
-    {
-      uid: Date.now() + Math.random(),
-      name: item.name,
-      price: item.price,
+    setCart((prev) => [
+      ...prev,
+      {
+        uid: Date.now() + Math.random(),
+        name: item.name,
+        price: item.price,
 
-      hasCook: item.hasCook,
-      hasBitter: item.hasBitter,
-      hasSpicy: item.hasSpicy,
+        hasCook: item.hasCook,
+        hasBitter: item.hasBitter,
+        hasSpicy: item.hasSpicy,
 
-      // ===== ค่าเริ่มต้น (ตัวนี้แหละที่หาย) =====
-      cook: item.hasCook ? "สุก" : "",
-      bitter: item.hasBitter ? "ไม่ขม" : "",
-      spicy: item.hasSpicy ? "เผ็ดกลาง" : "",
-    },
-  ]);
-};
-
+        cook: item.hasCook ? "สุก" : "",
+        bitter: item.hasBitter ? "ไม่ขม" : "",
+        spicy: item.hasSpicy ? "เผ็ดกลาง" : "",
+      },
+    ]);
+  };
 
   const updateItem = (uid, field, value) => {
     setCart((prev) =>
@@ -77,7 +71,7 @@ export default function App() {
   const total = cart.reduce((s, i) => s + (Number(i.price) || 0), 0);
 
   /* ================= ORDER ================= */
-  const submitOrder = () => {
+  const submitOrder = async () => {
     const payload = {
       type: "ORDER",
       orderId,
@@ -88,9 +82,9 @@ export default function App() {
       items: cart,
     };
 
-    fetch(GAS_URL, {
+    // ✅ ยิงเข้า Vercel API เท่านั้น
+    await fetch("/api/order", {
       method: "POST",
-      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
@@ -148,11 +142,10 @@ export default function App() {
               </CardContent>
             </Card>
 
-            {/* ===== เมนู ===== */}
+            {/* เมนู */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6">📋 เมนู</Typography>
-
                 {menus.map((i) => (
                   <Box
                     key={i.row}
@@ -169,11 +162,10 @@ export default function App() {
               </CardContent>
             </Card>
 
-            {/* ===== ตะกร้า ===== */}
+            {/* ตะกร้า */}
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6">🛒 ตะกร้า</Typography>
-
                 {cart.map((item) => (
                   <Box key={item.uid} sx={{ mb: 2 }}>
                     <Typography>

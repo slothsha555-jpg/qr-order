@@ -4,7 +4,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🔴 URL นี้ต้องเป็น /exec ของ Google Apps Script เท่านั้น
     const GAS_URL =
       "https://script.google.com/macros/s/AKfycbzmGR44z676R6brKDa5pwnP7mpgDWsWdznADerz0aiu3nuUqimKwyG97wkKWNY4qhFYxA/exec";
 
@@ -18,10 +17,9 @@ export default async function handler(req, res) {
 
     const text = await response.text();
 
-    // ส่งผลลัพธ์กลับไปให้ frontend
     res.status(200).send(text);
   } catch (err) {
-    console.error("PAID API ERROR", err);
+    console.error("ORDER API ERROR", err);
     res.status(500).json({ error: err.toString() });
   }
 }
