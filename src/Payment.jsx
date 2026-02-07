@@ -28,35 +28,36 @@ export default function Payment() {
   } = state;
 
   const handlePaid = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const payload = {
-        type: "PAID",
-        orderId,
-        customerName,
-        customerNote,
-        orderType,
-        items,
-        total,
-      };
+    const payload = {
+      type: "PAID",
+      orderId,
+      customerName,
+      customerNote,
+      orderType,
+      items,
+      total,
+    };
 
-      await fetch("/api/paid", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    await fetch(GAS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-      alert("รับชำระเงินแล้ว ✅");
-      navigate("/");
-    } catch (err) {
-      alert("ส่งข้อมูลไม่สำเร็จ ❌");
-    } finally {
-      setLoading(false);
-    }
-  };
+    alert("รับชำระเงินแล้ว ✅");
+    navigate("/");
+  } catch (err) {
+    alert("ส่งข้อมูลไม่สำเร็จ ❌");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
